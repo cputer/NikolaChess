@@ -1,5 +1,5 @@
-NikolaChess
-===========
+Nikola Chess
+============
 
 http://nikolachess.com  GPU based Chess Engine
 
