@@ -33,7 +33,7 @@ Results
 
 End Game Analysis Calculation based on 3 repetition rule and 50 consecutive moves rules of FIDE:
 
-No number moves |      maximum        |     number                   |                                      
+No              |      number moves   |     maximum number           |                                      
 ----------------|---------------------|------------------------------|              
 1               |     5               |     3775852872               |                                            
 2               |     10              |     7.30398216506453x10^16   |                                            
