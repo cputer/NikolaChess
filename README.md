@@ -21,6 +21,13 @@ Patents
 
 CPUTER company holds patents on algorithms for a funtional application.
 
+
+Calculations
+============
+
+The purpose of this calculation is to prove the possibility of solving the game of chess  with mathematical calculations based on a computer program. In a hypothetical situation where two opponents (for example, super-computers) are making perfect moves the game itself will result in a perfect draw. 
+
+
 Results
 =======
 
