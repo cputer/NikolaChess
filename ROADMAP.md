@@ -167,6 +167,21 @@ Unlike standard MCTS (Lc0 / KataGo), decisions are driven by **analytic converge
 
 This enables **early analytic detection of fortresses and draw convergence**, even in positions where neural networks remain overconfident.
 
+**Move Ordering — the √b Effective-Branching Law**
+
+The single largest lever on search depth is move-ordering fidelity, not raw node throughput. Under the Knuth–Moore square-root law (1975), alpha-beta with *perfect* move ordering visits ≈ `b^(d/2)` nodes instead of `b^d` — the effective branching factor collapses from `b` to **√b**. For chess (b ≈ 35) that is `√35 ≈ 5.9`: the difference between reaching depth ~10 and depth 20+.
+
+Near-√b ordering is realized through a priority pipeline:
+
+- Hash / PV move first (transposition table)
+- MVV-LVA for captures
+- Killer moves + history heuristic for quiet moves
+- Null-move pruning and Late Move Reductions to prune deeper
+
+In the hybrid path, the **transformer policy head feeds move ordering directly** — a learned prior is the modern route to near-optimal ordering, and it compounds with the analytic pruning above. Ordering ties must resolve via a stable key so that games remain bit-level reproducible under MindLang determinism.
+
+**Effective Branching Factor (EBF)** is tracked as a first-class search metric: target ≤ 7 before the policy head, ≤ 6 once the policy prior is online.
+
 ---
 
 ### Phase 4 — Self-Play & Evolutionary Training  
@@ -202,6 +217,7 @@ Deliverables:
 | Fortress Detection | Depth-reliant | Analytic / Immediate |
 | Endgame Variance | High | Minimal (Smoothed) |
 | Neural Blind Spot Reduction | ~10–20% | ≥40–60% |
+| Effective Branching Factor (EBF) | ~9–11 | ≤6 (→ √b ≈ 5.9) |
 | Language Runtime | MindLang v1 | MindLang v2-Native |
 
 ---
@@ -213,6 +229,8 @@ Deliverables:
 - **Feynman–Kac Formula** — stochastic method used in Remizov-Monte-Carlo rollouts  
 - **SPTT** — Speculative Parallel Tree Traversal, a hybrid search method combining alpha-beta with speculative parallel expansion
 - **MindLang** — GPU-native, autodiff-enabled language for neural + symbolic systems
+- **EBF (Effective Branching Factor)** — average number of child nodes actually searched per ply after pruning; the √b square-root law (Knuth–Moore) is its theoretical floor under perfect move ordering
+- **√b Law** — with optimal alpha-beta move ordering, search cost drops from `b^d` to `b^(d/2)`, halving the effective exponent (b ≈ 35 → √b ≈ 5.9)
 
 ---
 
