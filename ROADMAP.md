@@ -182,6 +182,20 @@ In the hybrid path, the **transformer policy head feeds move ordering directly**
 
 **Effective Branching Factor (EBF)** is tracked as a first-class search metric: target ≤ 7 before the policy head, ≤ 6 once the policy prior is online.
 
+**Confidence-Weighted Re-Search — converging on the surviving move**
+
+The Remizov flow asks *where a position converges*; the same convergence logic applies one level up, to *which move the search itself converges on*. Rather than spreading depth uniformly, re-search budget is concentrated on the candidate that keeps surviving refutation — the move whose evaluation stops moving as we look harder.
+
+The statistical basis is the standard error of the value estimate: for a move re-examined `N` times (deeper re-searches, wider aspiration windows, additional rollouts), the uncertainty in its score shrinks as `~1/√N`. A move whose score holds steady across re-searches has a collapsing error bar; a move whose score swings is still noise. Selectivity should follow the error bar, not the raw best-score.
+
+Concrete realizations on the current alpha-beta / SPTT path:
+
+- **Aspiration-driven re-search budget** — the existing `aspiration_search` (narrow window around the prior draw-score) is wired into iterative deepening and given a per-move budget that grows for the surviving candidate and shrinks for moves that fail low. Today the deepening loop searches a full `[0,1]` window every iteration; the aspiration path already exists in `search.mind` but is unused — this closes that gap.
+- **Singular-move extensions** — when one move's score is dramatically separated from the rest (a position on an ultra-thin path, where exactly one move holds the draw), extend search depth on that move alone. This is the classic singular-extension lever, and it is the search-level expression of "one move survives, everything else collapses."
+- **Confidence as a pruning signal** — a candidate whose error bar has collapsed below threshold can terminate its own re-search early (its truth has stabilized), freeing budget for genuinely contested moves.
+
+In the hybrid path this composes with the policy head and attractor pruning: the policy prior seeds *which* moves are worth re-searching, the `1/√N` confidence governs *how much* re-search each one earns, and the Remizov attractor score supplies the analytic stopping criterion. All re-search ordering and budget ties resolve via the same stable key as move ordering, preserving bit-level reproducibility under MindLang determinism.
+
 ---
 
 ### Phase 4 — Self-Play & Evolutionary Training  
