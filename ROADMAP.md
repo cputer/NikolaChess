@@ -196,6 +196,17 @@ Concrete realizations on the current alpha-beta / SPTT path:
 
 In the hybrid path this composes with the policy head and attractor pruning: the policy prior seeds *which* moves are worth re-searching, the `1/√N` confidence governs *how much* re-search each one earns, and the Remizov attractor score supplies the analytic stopping criterion. All re-search ordering and budget ties resolve via the same stable key as move ordering, preserving bit-level reproducibility under MindLang determinism.
 
+**NikolaChess Immortal — thickest-branch selection toward the draw**
+
+A variant configuration of the hybrid search tuned for maximum survivability rather than maximum sharpness. Where confidence-weighted re-search asks *which single move stops moving under scrutiny*, Immortal mode asks the dual question across the whole subtree: *which branch stays alive under the widest set of opponent replies*. Selection favors the **thickest** continuation — the move whose surviving sub-branches remain numerous and high-valued after refutation, not the one with the single sharpest line. A thin line that wins against best play but collapses against one inaccuracy is rejected in favor of a thick line that holds the draw against almost everything.
+
+The search criterion combines two signals already present in the hybrid path:
+
+- **Branch thickness** — for each candidate, measure the fraction (and aggregate value) of child sub-branches that survive above the draw threshold after deep re-search. A move ordering law promotes the candidate with the largest surviving mass, not just the largest single-line score. This is the subtree-level expression of robustness: many roads still reach the draw.
+- **Persistent draw-direction bias** — the existing draw-first ordering and Remizov attractor score are kept as a standing pull toward the `1/2` fixed point across the whole game, so the engine continuously steers the position back toward the drawn attractor rather than only at the leaves. The draw is treated as the target basin, and Immortal mode keeps the position inside it.
+
+Honest status: an earlier deep-network prototype was trained along exactly this thickest-branch / draw-steering principle. It was a *successful* design — the steering worked and the draw-survival behavior emerged — but competing engines still won their matches against it, so it is roadmapped here as an aspirational Immortal-mode variant, not a claim of parity. The open question carried forward is whether the analytic Remizov attractor (an explicit drawn fixed point) gives the thickness signal a sharper, more reproducible target than the learned prior alone did. Thickness scoring and all ordering ties resolve via the same stable key as the rest of the hybrid path, preserving bit-level reproducibility under MindLang determinism.
+
 ---
 
 ### Phase 4 — Self-Play & Evolutionary Training  
